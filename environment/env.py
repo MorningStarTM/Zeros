@@ -22,10 +22,10 @@ class Environment:
         if current_cell_value == 1:
             rect = pygame.Rect((col, row), (32,32))
 
-    def create_path(self):
+    def create_path(self, enemy_pos):
 
     # start
-        start_x, start_y = [1,1]
+        start_x, start_y = enemy_pos
         start = self.grid.node(start_x,start_y)
 
     # end

@@ -1,12 +1,74 @@
 import pygame
 import math
 import random
+from pathfinding.core.grid import Grid
+from pathfinding.finder.a_star import AStarFinder
+from pathfinding.core.diagonal_movement import DiagonalMovement
 
 class Environment:
-    def __init__(self, width, height):
+    def __init__(self, width, height, matrix):
         self.width = width
         self.height = height
+        self.matrix = matrix
+        self.grid = Grid(matrix = matrix)
+        self.path = []
         self.walls = []  # List to store all the rectangles of the environment objects
+
+    def draw_active_cell(self):
+        mouse_pos = pygame.mouse.get_pos()
+        row = mouse_pos[1]
+        col = mouse_pos[0]
+        current_cell_value = self.matrix[row][col]
+        if current_cell_value == 1:
+            rect = pygame.Rect((col, row), (32,32))
+
+    def create_path(self):
+
+    # start
+        start_x, start_y = [1,1]
+        start = self.grid.node(start_x,start_y)
+
+    # end
+        mouse_pos = pygame.mouse.get_pos()
+        end_x,end_y =  mouse_pos[0], mouse_pos[1]  
+        end = self.grid.node(end_x,end_y) 
+
+    # path
+        finder = AStarFinder(diagonal_movement = DiagonalMovement.always)
+        self.path,_ = finder.find_path(start,end,self.grid)
+        #print(self.path)
+        self.grid.cleanup()
+
+
+    def draw_path(self, screen):
+        if self.path:
+            #print(self.path)
+            points = []
+            for point in self.path:
+                x = point.x 
+                y = point.y 
+                points.append((x,y))
+
+            pygame.draw.lines(screen,(17, 214, 70),False,points,5)
+
+    def update(self, screen):
+        self.draw_active_cell()
+        self.draw_path(screen)
+
+
+    def generate_matrix(self):
+        # Initialize an empty matrix
+        matrix = [[1 for _ in range(self.width)] for _ in range(self.height)]
+
+        # Fill in the matrix based on the walls in the environment
+        for wall in self.walls:
+            x, y, w, h = wall.x, wall.y, wall.width, wall.height
+            for i in range(x, x + w):
+                for j in range(y, y + h):
+                    matrix[j][i] = 0  # Set obstacle cells to 1
+
+        return matrix
+
 
     def outline(self, screen):
         wall_color = (66, 106, 166)  # Wall color
